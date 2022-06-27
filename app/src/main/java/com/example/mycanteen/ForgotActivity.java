@@ -5,11 +5,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,34 +27,27 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SignupActivity extends AppCompatActivity {
+public class ForgotActivity extends AppCompatActivity {
 
     EditText emailEd,mobileEd,passwordEd,c_passwordEd;
-    Button signupBtn;
-    TextView btn1;
-    String api_link="https://schedular.in/MyCanteen/api/register.php";
+    Button nextBtn;
+    String api_link="https://schedular.in/MyCanteen/api/forgot_api.php";
+    ProgressBar progressBar;
 
-    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signup);
+        setContentView(R.layout.activity_fogot);
 
         emailEd=findViewById(R.id.emailEd);
         mobileEd=findViewById(R.id.moblieEd);
         passwordEd=findViewById(R.id.passwordEd);
         c_passwordEd=findViewById(R.id.c_passwordEd);
-        signupBtn=findViewById(R.id.nextBtn);
-        btn1=findViewById(R.id.btn1);
-
-        progressDialog=new ProgressDialog(this);
-        progressDialog.setIndeterminate(true);
-        progressDialog.setMessage("Please Wait....");
-        progressDialog.setCanceledOnTouchOutside(false);
-        progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-
-        signupBtn.setOnClickListener(new View.OnClickListener() {
+        nextBtn=findViewById(R.id.nextBtn);
+        progressBar=findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.GONE);
+        nextBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String email_s=emailEd.getText().toString();
@@ -67,54 +60,42 @@ public class SignupActivity extends AppCompatActivity {
                         if(password_s.equals(cpass_s)){
                             uploadToServer(email_s,mobile_s,password_s,getPackageName());
                         }else {
-                            Toast.makeText(SignupActivity.this, "Password Mismatched", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ForgotActivity.this, "Password Mismatched", Toast.LENGTH_SHORT).show();
                         }
                     }else{
-                        Toast.makeText(SignupActivity.this, "Please enter 10 digit mobile number", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ForgotActivity.this, "Please enter 10 digit mobile number", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         });
-
     }
 
     private void uploadToServer(String email_s, String mobile_s, String password_s, String packageName) {
-        progressDialog.show();
-
+        progressBar.setVisibility(View.VISIBLE);
         StringRequest request=new StringRequest(Request.Method.POST, api_link, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 try {
-                    Toast.makeText(SignupActivity.this, "working", Toast.LENGTH_SHORT).show();
                     JSONObject jsonObject=new JSONObject(response);
                     String status=jsonObject.getString("status");
                     if(status.equals("SUCCESS")){
-                        progressDialog.dismiss();
-                        Toast.makeText(SignupActivity.this, "Account Created", Toast.LENGTH_SHORT).show();
-                        Intent intent=new Intent(SignupActivity.this,CreatepinActivity.class);
-                        intent.putExtra("email",email_s);
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(ForgotActivity.this, "Password Updated", Toast.LENGTH_SHORT).show();
+                        Intent intent=new Intent(ForgotActivity.this,CreatepinActivity.class);
                         startActivity(intent);
                         finish();
-                    }else if(status.equals("FAILED")){
-                        progressDialog.dismiss();
-                        Toast.makeText(SignupActivity.this, "Failed to Signup", Toast.LENGTH_SHORT).show();
-                    }else if(status.equals("EXISTS")){
-                        progressDialog.dismiss();
-                        Toast.makeText(SignupActivity.this, "Account already exists on same emailID", Toast.LENGTH_SHORT).show();
-                    }else{
-                        progressDialog.dismiss();
-                        Toast.makeText(SignupActivity.this, ""+status, Toast.LENGTH_SHORT).show();
+                    }else if(status.equals("Failed")){
+                        progressBar.setVisibility(View.GONE);
+                        Toast.makeText(ForgotActivity.this, "Failed to Update", Toast.LENGTH_SHORT).show();
                     }
                 } catch (JSONException e) {
-                    progressDialog.dismiss();
-                    Toast.makeText(SignupActivity.this, "exception"+e.getMessage(), Toast.LENGTH_LONG).show();
                     e.printStackTrace();
                 }
             }
         }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Toast.makeText(SignupActivity.this, "Volley Error:"+error.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ForgotActivity.this, "Volley Error:"+error.getMessage(), Toast.LENGTH_SHORT).show();
             }
         }){
             @Override
@@ -125,17 +106,10 @@ public class SignupActivity extends AppCompatActivity {
                 data.put("password",password_s);
                 data.put("package",packageName);
                 return data;
-            }
+            };
+
         };
         RequestQueue requestQueue= Volley.newRequestQueue(this);
         requestQueue.add(request);
-
-    }
-
-
-    public void openLogin(View view) {
-        Intent intent=new Intent(SignupActivity.this,SigninActivity.class);
-        startActivity(intent);
-        finish();
     }
 }

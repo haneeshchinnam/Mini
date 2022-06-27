@@ -49,6 +49,9 @@ public class LoginActivity extends AppCompatActivity {
                 String pin=preferences.getString("pin",null);
                 if(pin.equals(pin1)){
                     Toast.makeText(LoginActivity.this, "PIN CORRECT", Toast.LENGTH_SHORT).show();
+                    Intent intent=new Intent(LoginActivity.this,HomeActivity.class);
+                    startActivity(intent);
+                    finish();
                 }else {
                     Toast.makeText(LoginActivity.this, "Invalid PIN", Toast.LENGTH_SHORT).show();
                 }
